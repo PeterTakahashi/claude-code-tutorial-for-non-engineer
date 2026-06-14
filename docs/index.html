@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>はじめてのClaude Code 〜手を動かして“動くもの”を作る〜（ワークブック）</title>
+<style>
+  :root{
+    --ink:#1F2933; --paper:#FAF9F6; --accent:#D97757; --accent2:#2A9D8F;
+    --muted:#6B7280; --line:#E7E3DC; --soft:#F0EDE7;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
+    line-height:1.8; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:860px; margin:0 auto; padding:0 22px 96px; }
+  header.hero{ background:linear-gradient(135deg,#1F2933,#2b3a47); color:var(--paper); padding:56px 22px; }
+  header.hero .inner{ max-width:860px; margin:0 auto; }
+  header.hero .eyebrow{ color:var(--accent); }
+  header.hero h1{ color:#fff; font-size:34px; margin:.2em 0; line-height:1.3; }
+  header.hero p{ color:#E9C3B4; font-size:17px; margin:.2em 0; }
+  .eyebrow{ font-size:13px; letter-spacing:.18em; color:var(--accent); font-weight:800; }
+  h2{ font-size:27px; border-bottom:4px solid var(--accent); padding-bottom:.18em; margin:1.8em 0 .6em; scroll-margin-top:16px; }
+  h3{ font-size:21px; color:var(--accent2); margin:1.4em 0 .3em; }
+  h4{ font-size:17px; margin:1.1em 0 .2em; }
+  p, li{ font-size:16px; }
+  a{ color:var(--accent2); }
+  strong{ color:var(--accent); }
+  code{ background:var(--soft); padding:.06em .35em; border-radius:6px; font-size:.9em; }
+  ul,ol{ padding-left:1.3em; }
+  li{ margin:.3em 0; }
+  img.fig{ display:block; width:280px; max-width:60%; float:right; margin:0 0 14px 22px;
+    border-radius:16px; box-shadow:0 8px 24px rgba(31,41,51,.13); background:#fff; }
+  .clear{ clear:both; }
+  .do{ background:#EAF6F3; border-left:6px solid var(--accent2); padding:.7em 1em; border-radius:0 12px 12px 0; margin:1em 0; }
+  .warn{ background:#FBEEE8; border-left:6px solid var(--accent); padding:.7em 1em; border-radius:0 12px 12px 0; margin:1em 0; }
+  .term{ display:inline-block; background:#fff; border:2px solid var(--accent); color:var(--accent);
+    border-radius:999px; padding:.02em .7em; font-weight:800; font-size:.85em; margin-right:.2em; }
+  .gloss{ color:var(--muted); }
+  blockquote{ border-left:5px solid var(--accent2); margin:1em 0; padding:.4em 1em; background:#EFF6F4; border-radius:0 10px 10px 0; }
+  table{ border-collapse:collapse; width:100%; margin:1em 0; font-size:15px; }
+  th,td{ border:1px solid var(--line); padding:.5em .7em; text-align:left; }
+  th{ background:var(--soft); }
+  .prompt{ position:relative; background:var(--ink); color:#F6F8FA; border-radius:12px; padding:14px 16px; margin:.6em 0 1.2em;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:14px; line-height:1.65; white-space:pre-wrap; }
+  .prompt::before{ content:"コピペ用プロンプト"; position:absolute; top:-10px; left:14px; background:var(--accent); color:#fff;
+    font-family:inherit; font-size:11px; font-weight:800; letter-spacing:.05em; padding:.1em .6em; border-radius:999px;
+    font-family:-apple-system,"Hiragino Sans",sans-serif; }
+  .check{ background:#fff; border:1px dashed var(--accent2); border-radius:10px; padding:.4em .8em; font-size:14px; color:#1f6f63; margin:-.6em 0 1.4em; }
+  .check::before{ content:"✅ 確認："; font-weight:800; }
+  .toc{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 20px; margin:1.4em 0; }
+  .toc ol{ margin:.3em 0; }
+  .toc a{ text-decoration:none; }
+  .step{ display:inline-block; background:var(--accent2); color:#fff; font-weight:800; font-size:13px;
+    border-radius:999px; padding:.05em .7em; margin-right:.4em; }
+  .small{ font-size:13px; color:var(--muted); }
+  hr{ border:none; border-top:1px solid var(--line); margin:2.2em 0; }
+  .pill{ display:inline-block; background:#fff; border:2px solid var(--accent2); color:var(--accent2);
+    border-radius:999px; padding:.05em .7em; font-weight:800; font-size:13px; margin:0 .3em .3em 0; }
+  footer{ color:var(--muted); font-size:13px; text-align:center; padding:30px 0; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <span class="eyebrow">CLAUDE CODE 勉強会 / ワークブック</span>
+    <h1>はじめてのClaude Code<br>〜 手を動かして“動くもの”を作る 〜</h1>
+    <p>この記事だけ見ても、自分のペースで進められます。遅れて来ても大丈夫。</p>
+    <p class="small" style="color:#cdd6dd">スタンス：<strong style="color:#E9C3B4">全部わからなくてOK。動けば勝ち。</strong></p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <h2 id="goal">今日のゴール</h2>
+  <div class="do">
+    <strong>自分のパソコンで動く「お店の予約サイト」を作って、ngrokで“友達に送れるURL”にするところまで。</strong>
+  </div>
+  <p>むずかしいサーバー契約や公開設定はしません。「サーバー」は各自のPCの中で一時的に動かすだけ＋ngrokで公開の住所を一本だけ通します。</p>
+
+  <table>
+    <tr><th>時間の目安</th><th>内容</th></tr>
+    <tr><td>準備</td><td>アプリ・ログイン・Docker・ngrok（Windowsはgitも）</td></tr>
+    <tr><td>最低限の地図</td><td>言葉と仕組みを“使う直前に1個ずつ”</td></tr>
+    <tr><td>ハンズオン①</td><td>AIにブラウザで調べ物 → 表（CSV）に</td></tr>
+    <tr><td>ハンズオン②</td><td>予約サイトを作って ngrok で公開（主役）</td></tr>
+    <tr><td>まとめ</td><td>自分のアイデアを試す（idea-to-mockup）</td></tr>
+  </table>
+
+  <div class="toc">
+    <strong>もくじ</strong>
+    <ol>
+      <li><a href="#setup">STEP 準備：今日使う道具をそろえる</a></li>
+      <li><a href="#map">最低限の地図（言葉と仕組み）</a></li>
+      <li><a href="#features">Claude Codeの基本機能</a></li>
+      <li><a href="#hands1">ハンズオン①：AIにブラウザで調べ物 → CSV</a></li>
+      <li><a href="#hands2">ハンズオン②：予約サイトを作って公開（STEP0〜9）</a></li>
+      <li><a href="#tips">うまくいかない時のコツ</a></li>
+      <li><a href="#glossary">用語ミニ辞典（比喩つき）</a></li>
+      <li><a href="#next">次の一歩：自分のアイデアを試す</a></li>
+    </ol>
+  </div>
+
+  <!-- ============ 準備 ============ -->
+  <h2 id="setup">1. 準備：今日使う道具をそろえる</h2>
+
+  <h3>① 事前に各自で済ませておくこと（詰まりやすい3点＋Win）</h3>
+  <ul>
+    <li><strong>有料のClaudeプラン</strong>（Pro / Max / Team / Enterprise のどれか）。※無料プランではCodeタブが使えません。</li>
+    <li><strong>Claudeアカウント</strong>でログインできる状態。</li>
+    <li><strong>ngrokのアカウント＋authtoken</strong>（取り方は下の④）。</li>
+    <li><strong>Windowsの人は Git</strong> も。これは git を使うためではなく、<strong>Claude Code がコマンドを動かす土台</strong>として必要（Macは多くが標準装備）。<a href="https://git-scm.com/downloads/win" target="_blank" rel="noopener">Git for Windows</a> を入れておく。</li>
+  </ul>
+
+  <h3>② Claude Desktop アプリを入れる</h3>
+  <p>今日はターミナル（黒い画面）を使いません。<strong>Claude Desktop アプリの「Code」タブ</strong>から操作します。</p>
+  <ul>
+    <li><strong>Mac</strong>：公式サイトから Claude Desktop（Apple Silicon / Intel 兼用）をダウンロードしてインストール。</li>
+    <li><strong>Windows</strong>：x64 版（または ARM64 版）のインストーラをダウンロードしてインストール。<span class="small">※ Linux はDesktop非対応。</span></li>
+    <li>アプリを起動 → <strong>Anthropicアカウントでサインイン</strong> → 上部の <strong>「Code」タブ</strong>を開く。</li>
+    <li>使うとき：<strong>Local</strong> を選ぶ → <strong>Select folder（作業フォルダ）</strong>を選ぶ → やりたいことを文章で書く → 出てきた<span class="term">差分（diff）</span><span class="gloss">どこが変わるかの表示</span>を見て <strong>Accept / Reject</strong>。</li>
+  </ul>
+  <p class="small">Desktop には Claude Code が同梱なので、Node.js や CLI を別途入れる必要はありません（ただし Docker は別途必要）。</p>
+
+  <h3>③ Docker Desktop を入れて、起動しておく</h3>
+  <img class="fig" src="../slide/img/docker.png" alt="アプリを箱（コンテナ）ごと動かすDockerのイメージ">
+  <p><span class="term">Docker</span><span class="gloss">アプリを“箱（コンテナ）”ごと、そのまま動かす仕組み</span></p>
+  <ul>
+    <li>ふつう、ソフトは使う前に面倒なインストールが必要。Dockerなら<strong>必要なものが箱に入った状態</strong>で来て、動かすだけ。</li>
+    <li>今日は、ハンズオン②の予約システムで <strong>データベース（PostgreSQL）や Go</strong> を動かすのに使います。</li>
+    <li><strong>Docker Desktop</strong> を公式サイトからインストールし、<strong>アプリを開いて起動したまま</strong>にしておく（閉じると中の箱も止まります）。</li>
+  </ul>
+  <p class="small clear">※ Node.js / npm は Claude が各自のPCに入れてくれるので、そちらはDocker不要です。</p>
+
+  <h3>④ ngrok の authtoken を取る</h3>
+  <ol>
+    <li><a href="https://dashboard.ngrok.com/signup" target="_blank" rel="noopener">ngrokにサインアップ</a>（無料）。</li>
+    <li>ダッシュボードの <a href="https://dashboard.ngrok.com/get-started/your-authtoken" target="_blank" rel="noopener">Your Authtoken</a> ページで自分のトークンをコピー。</li>
+    <li>あとで使うときは、次のコマンドで登録します（当日はClaudeに頼んでもOK）：</li>
+  </ol>
+  <div class="prompt">ngrok config add-authtoken ここに自分のトークンを貼る</div>
+  <p class="small">公開するときは <code>ngrok http 3000</code> のように「アプリが動いているポート番号」を指定します。無料版のURLは <code>〜.ngrok-free.app</code> で、<strong>PCやngrokを閉じると止まる</strong>一時的なものです。</p>
+
+  <hr>
+
+  <!-- ============ 地図 ============ -->
+  <h2 id="map">2. 最低限の地図（言葉と仕組み）</h2>
+  <p class="small">用語は「使う直前に1個ずつ」。全部覚える必要はありません。目標は「説明できる」ではなく「<strong>見て驚かない</strong>」。</p>
+
+  <h3>そもそもClaude Codeって何？</h3>
+  <img class="fig" src="../slide/img/llm.png" alt="本に囲まれた物知りな助手">
+  <p><span class="term">LLM</span><span class="gloss">ネットの文章を大量に読んだ“物知りな助手”</span></p>
+  <p><span class="term">Claude</span><span class="gloss">その助手のひとり（Anthropic社製）</span></p>
+  <p><span class="term">Claude Code</span><span class="gloss">その助手に“手”を付けたもの</span></p>
+  <blockquote>ふつうのAIは「答えを言う」だけ。<strong>Claude Codeは、あなたのPCを実際に操作して、ファイルを作ったり動かしたりできる。</strong></blockquote>
+  <div class="clear"></div>
+
+  <h3>なぜ今、こんなに急に広まった？</h3>
+  <ul>
+    <li><strong>言葉で頼める</strong>：呪文のようなコードを覚えなくていい</li>
+    <li><strong>自分で手を動かす</strong>：提案だけでなく、実際に作って・試して・直す</li>
+    <li><strong>失敗を自分で直す</strong>：エラーが出たら原因を探して修正</li>
+    <li><strong>道具につながる</strong>：MCPで世界中のサービスと接続</li>
+  </ul>
+  <div class="do">要するに「作れる人の条件」が、“コードが書ける”から“<strong>やりたいことを言葉にできる</strong>”に変わった。</div>
+
+  <h3>Webサービスを“レストラン”でイメージ</h3>
+  <img class="fig" src="../slide/img/restaurant.png" alt="客席・ウェイター・厨房・食材庫が並ぶレストランの断面">
+  <p>Webの仕組みは、ぜんぶレストランにたとえると分かりやすいです。</p>
+  <ul>
+    <li><strong>客席・メニュー</strong>＝<span class="term">フロントエンド</span><span class="gloss">見える画面</span></li>
+    <li><strong>ウェイター</strong>＝<span class="term">API</span><span class="gloss">注文を運ぶ窓口</span></li>
+    <li><strong>厨房</strong>＝<span class="term">バックエンド</span><span class="gloss">実際の調理＝処理</span></li>
+    <li><strong>食材庫</strong>＝<span class="term">データベース</span><span class="gloss">データの保管</span></li>
+    <li><strong>店舗</strong>＝<span class="term">サーバー</span><span class="gloss">動かす場所そのもの</span> / 店を借りる＝<span class="term">クラウドサーバー</span></li>
+  </ul>
+  <div class="clear"></div>
+  <div class="do">今日の「サーバー」は、<strong>あなたのPCの中で一時的に動くだけ</strong>。クラウド契約も難しい設定もナシ。<span class="term">ngrok</span><span class="gloss">PCに“公開の住所”を一本だけ通す道具</span>で、友達がスマホからアクセスできます。</div>
+
+  <h3>Claude Codeの得意・苦手</h3>
+  <p><strong>得意：</strong>小さなWebアプリ・ツール・自動化をゼロから形にする／既存のものの修正・説明／調べ物や面倒な手作業の自動化／とりあえず動く試作（モック）を速く作る。</p>
+  <div class="warn"><strong>苦手：</strong>あいまいな丸投げ、正確さが命の計算を検算なしで使うこと、最新すぎる情報。→ <strong>具体的に頼む・結果を自分で確認する</strong>のが大事。</div>
+
+  <hr>
+
+  <!-- ============ 基本機能 ============ -->
+  <h2 id="features">3. Claude Codeの基本機能</h2>
+
+  <h3>画面の使い方（Claude Desktop）</h3>
+  <ul>
+    <li><strong>Code</strong>タブ → <strong>Local</strong> → 作業フォルダを選ぶ</li>
+    <li>頼みごとを書くと、Claudeが<strong>変更案</strong>を出す → <strong>差分を見て Accept / Reject</strong></li>
+    <li><strong>Preview</strong>：作ったアプリをアプリ内で起動して見られる</li>
+    <li>ポイント：<strong>いつでも止められる・言い直せる</strong>。気軽に試してOK。</li>
+  </ul>
+
+  <h3>remote-control（リモート操作）</h3>
+  <img class="fig" src="../slide/img/remote_control.png" alt="スマホから自宅のPCに指示を送る">
+  <p><span class="term">remote-control</span><span class="gloss">スマホからPCのClaude Codeに指示を送る</span></p>
+  <p>外出先からスマホで「これやっといて」と投げると、PC側のClaude Codeが受け取って作業します。“PCの前にいなくても進む”感覚。<span class="small">※新しめの機能。今日は紹介まで。</span></p>
+  <div class="clear"></div>
+
+  <h3>MCP（コネクタ）</h3>
+  <img class="fig" src="../slide/img/mcp.png" alt="USB端子で外部の道具につながるAI">
+  <p><span class="term">MCP</span><span class="gloss">AI用の“USB端子”。外部サービスに挿す仕組み</span></p>
+  <p>Claude Code単体は「自分のPCの中」が基本。<strong>MCPを挿す</strong>と、外の世界（地図・メール・カレンダー等）につながります。</p>
+  <p class="small clear"><strong>活用例（今日はやらない）：</strong>Gmailを読み取って下書き／Slackの返信案／Googleカレンダーで予定把握。メールやチャットの<strong>自動送信</strong>は事故のもとなので、実運用は「下書きまで＝人が最後に確認」が安全。</p>
+
+  <h3>Skills（スキル）</h3>
+  <img class="fig" src="../slide/img/skills.png" alt="手順書（レシピ集）を持つロボット">
+  <p><span class="term">Skills</span><span class="gloss">よく使う“作業手順書”をまとめたパック</span></p>
+  <p>「この手順でやって」と覚えさせておけるもの。画面で <code>/</code> を打つと呼び出せます。今日は最後に <code>/idea-to-mockup</code> を使います。</p>
+  <div class="clear"></div>
+
+  <h3>Agentic loop（自分で回す仕組み）</h3>
+  <img class="fig" src="../slide/img/agentic_loop.png" alt="考える→やる→確認→直すを繰り返すループ">
+  <p><span class="term">Agentic loop</span><span class="gloss">考える→やる→結果を見る→直す、を自分で繰り返す</span></p>
+  <p>人が一手ずつ指示しなくても、ある程度<strong>自走</strong>します。だからこそ「止める・確認する」操作が大事になります。</p>
+  <div class="clear"></div>
+
+  <hr>
+
+  <!-- ============ ハンズオン① ============ -->
+  <h2 id="hands1">4. ハンズオン①：AIにブラウザで調べ物 → CSV</h2>
+  <img class="fig" src="../slide/img/playwright_robot.png" alt="ロボットが自動でブラウザを操作して情報を集める">
+  <p><span class="term">Playwright MCP</span><span class="gloss">人の代わりにブラウザを自動操作する道具</span></p>
+  <ol>
+    <li>Claude Codeに <strong>Playwright MCP</strong> をつなぐ</li>
+    <li>「○○を調べて一覧にして」とお願いする</li>
+    <li>Claudeが<strong>ブラウザを自動で動かして</strong>集める（画面で見える！）</li>
+    <li><span class="term">CSV</span><span class="gloss">表計算で開ける、カンマ区切りの表ファイル</span>に書き出す</li>
+    <li><strong>スプレッドシート</strong>（Excel / Googleスプレッドシート）で開く</li>
+  </ol>
+  <div class="clear"></div>
+  <p>頼み方の例（コピペ）：</p>
+  <div class="prompt">Googleマップで“渋谷 カフェ”を調べて、上位10件の店名・住所・評価を集めて、cafes.csv に保存して</div>
+  <div class="warn"><strong>マナー：</strong>少量・学習目的で。相手サイトの規約・回数制限に配慮（大量取得はしない）。うまくいかない時は件数を減らす／条件を具体的にする。</div>
+
+  <hr>
+
+  <!-- ============ ハンズオン② ============ -->
+  <h2 id="hands2">5. ハンズオン②：予約サイトを作って公開（STEP0〜9）</h2>
+  <p>ここが今日の主役。<strong>お店の予約サイト</strong>を作って、最後に ngrok で公開します。</p>
+  <h4>これから作るもの</h4>
+  <ul>
+    <li>お店の<strong>トップページ</strong>（名前・写真・営業時間）</li>
+    <li><strong>予約フォーム</strong>（名前・日時・人数）</li>
+    <li>送信された予約の<strong>一覧表示</strong>（<strong>管理者だけ</strong>が見られる）</li>
+  </ul>
+  <div class="do">進め方：下のプロンプトを<strong>上から1つずつ</strong>コピペして送る。1ステップごとに「動く状態」にして、差分を見て Accept。中身が分からなくてOK、コピペで大丈夫。</div>
+  <p class="small">前提：Docker Desktop を起動しておく／Codeタブ→Localで作業フォルダを選ぶ／ngrokのauthtoken取得済み。</p>
+
+  <h3><span class="step">STEP 0</span>はじめる（方針と技術スタックを決める）</h3>
+  <div class="prompt">お店の予約サイトを一緒に作りたいです。最後は ngrok で友達に公開します。
+これから1ステップずつ指示します。勝手に先へ進めず、各ステップごとに「動く状態」にして、
+変更した点と確認方法を短く教えてください。
+
+技術スタックはこれで統一してください：
+- バックエンド: Go + Gin + GORM、データベースは PostgreSQL
+- フロントエンド: Next.js(React, TypeScript) + Tailwind CSS + shadcn/ui
+  一覧表は TanStack Table、入力チェックは Zod
+- APIは OpenAPI で定義し、フロントの型は openapi-typescript で自動生成して使う
+- ローカルの PostgreSQL（と、必要なら MinIO）は Docker(docker compose) で起動
+- 画像などのファイル保管が必要になったら MinIO(S3互換) を使う
+
+まずは、この構成でプロジェクトの骨組み（フォルダ構成・docker compose・起動方法）だけ作って、
+README に「起動手順」を書いてください。画面や機能はまだ要りません。</div>
+  <div class="check">フォルダ構成ができ、<code>docker compose up</code> で PostgreSQL が立ち上がる。READMEに起動手順がある。</div>
+
+  <h3><span class="step">STEP 1</span>トップページ（フロントエンド）</h3>
+  <div class="prompt">お店のトップページを作ってください。表示する内容は、
+お店の名前 / かんたんな紹介文 / 写真（ダミーでOK）/ 営業時間 です。
+Next.js + Tailwind + shadcn/ui を使い、スマホでも見やすいデザインにしてください。</div>
+  <div class="check">ブラウザでトップページが表示され、スマホ幅でも崩れない。</div>
+
+  <h3><span class="step">STEP 2</span>予約フォーム</h3>
+  <div class="prompt">トップページから行ける「予約フォーム」のページを作ってください。
+入力項目：お名前 / 電話番号 / 希望日時 / 人数 / メモ(任意)。
+入力チェックは Zod で行い、未入力や不正な値は分かりやすくエラー表示してください。
+まだ送信先(バックエンド)は無くてよいので、送信したら画面に「予約を受け付けました」と
+出るところまでで大丈夫です。</div>
+  <div class="check">フォームに入力でき、空欄や変な値だとエラーが出る。送信で完了メッセージが出る。</div>
+
+  <h3><span class="step">STEP 3</span>予約を受け取って保存（バックエンド / API / データベース）</h3>
+  <div class="prompt">予約フォームの内容を、バックエンド(Go + Gin)で受け取って PostgreSQL に保存できるように
+してください。
+- GORM で reservations テーブルを用意（名前 / 電話 / 希望日時 / 人数 / メモ / 受付日時）
+- API は OpenAPI で定義し、フロントの型は openapi-typescript で生成して使う
+- DB は docker compose で起動している前提
+予約フォームから送信したら、実際に DB に保存されるところまでつないでください。
+保存できているかを確認する方法も教えてください。</div>
+  <div class="check">フォーム送信した予約が、DBに1件保存されている。</div>
+
+  <h3><span class="step">STEP 4</span>予約一覧で確認（“動いた！”の瞬間）</h3>
+  <div class="prompt">保存された予約を一覧で見られる管理ページ（/admin）を作ってください。
+一覧は TanStack Table を使い、希望日時で並べ替えでき、新しい順で表示してください。
+予約フォームから入れた予約が、この一覧にどんどん増えていくのを確認できる状態にしてください。</div>
+  <div class="check">予約を入れる→ /admin の一覧に増える。並べ替えが効く。</div>
+
+  <h3><span class="step">STEP 5</span>管理者ログイン（一覧は管理者だけに）</h3>
+  <div class="prompt">さきほどの予約一覧(/admin)は、管理者だけが見られるようにログイン機能を追加してください。
+- 管理者は メールアドレス + パスワード でログイン
+- パスワードは必ずハッシュ化して保存（平文では保存しない）
+- ログインしていない人が /admin を開いたら、ログイン画面に飛ばす
+- ログアウトもできるようにする
+
+管理者アカウントの「新規作成(サインアップ)」ページは、一旦は誰でも作成できる簡易版でOKです。
+※あとで「最初の1人だけ」「招待制」などに制限できるよう、その箇所にコメントを残しておいてください。</div>
+  <div class="check">サインアップ→ログインで /admin が見られる。ログアウトすると /admin はログイン画面に戻される。</div>
+
+  <h3><span class="step">STEP 6</span>ユニットテスト（部品ごとの自動チェック）</h3>
+  <img class="fig" src="../slide/img/test_rehearsal.png" alt="味見（ユニット）と通しリハーサル（E2E）">
+  <p><span class="term">ユニットテスト</span><span class="gloss">部品ひとつが正しく動くかの確認</span>（＝料理を出す前のソースの味見）。</p>
+  <div class="prompt">ここまでの大事な部分にユニットテストを書いてください。最低でも次の3つ：
+1) 予約の保存（バックエンド）
+2) 入力チェック（Zod のバリデーション）
+3) ログインの認証（正しいパスワード / 間違ったパスワード）
+テストの実行コマンドと、全部通ったことを確認する方法を教えてください。</div>
+  <div class="check">テスト実行コマンドで、すべてのテストが PASS する。</div>
+
+  <h3><span class="step">STEP 7</span>E2Eテスト（お客さん目線の通し確認 / Playwright）</h3>
+  <p><span class="term">E2Eテスト</span><span class="gloss">お客さんの一連の流れを丸ごと確認</span>（＝開店前の通しリハーサル）。<span class="term">Playwright</span><span class="gloss">お客さんの代わりに画面を操作するロボット</span>が演じます。</p>
+  <div class="prompt">お客さんと管理者の一連の流れを、Playwright で自動テスト(E2E)してください。
+1) お客さんが予約フォームから予約 → 完了メッセージが出る
+2) 管理者がログイン → その予約が一覧に出ていることを確認
+テストの実行方法も教えてください。</div>
+  <div class="check">Playwright のテストが通り、予約〜一覧表示までが自動で確認できる。</div>
+  <div class="clear"></div>
+
+  <h3><span class="step">STEP 8</span>自分のPCで起動（Previewでも確認）</h3>
+  <div class="prompt">このアプリを自分のPCで起動して、ブラウザ（と Preview）で動いているのを確認したいです。
+docker compose を含めた「起動手順」を最新の状態に直して、
+最短で立ち上げる手順を 3〜5 行で教えてください。</div>
+  <div class="check">手順どおりに起動でき、トップ→予約→管理ログイン→一覧まで一通り触れる。</div>
+
+  <h3><span class="step">STEP 9</span>ngrokで公開（友達に送れるURLにする）🎉</h3>
+  <img class="fig" src="../slide/img/ngrok_tunnel.png" alt="自宅PCから外の友達のスマホへ一本のトンネル">
+  <div class="prompt">いま動いているアプリを ngrok で一時的に公開して、友達がスマホからアクセスできる
+URL を作ってください。出てきた 〜.ngrok-free.app の URL を教えてください。
+（PCやngrokを閉じると止まる、という点も確認したいです）</div>
+  <div class="check"><code>〜.ngrok-free.app</code> のURLが出て、スマホのブラウザから予約フォームが開ける。</div>
+  <div class="warn clear">無料版のURLは<strong>一時的</strong>。PCやngrokを閉じると止まります（＝“今この瞬間に生きているリンク”）。常時公開したいなら、本当はサーバーに置きます（今日はやらない）。</div>
+
+  <hr>
+
+  <!-- ============ コツ ============ -->
+  <h2 id="tips">6. うまくいかない時のコツ</h2>
+  <ul>
+    <li><strong>止める</strong>：暴走しそうなら停止ボタン</li>
+    <li><strong>言い直す</strong>：「さっきのを、こう変えて」でOK</li>
+    <li><strong>差分を見る</strong>：何が変わるか必ず確認してからAccept</li>
+    <li><strong>小さく頼む</strong>：一度に大きく頼まず、1ステップずつ</li>
+    <li><strong>エラーは会話のきっかけ</strong>：出たエラーをそのまま貼って「このエラーを直して」</li>
+    <li>進めすぎたら「<strong>STEP◯の状態に戻して</strong>」</li>
+  </ul>
+
+  <hr>
+
+  <!-- ============ 用語辞典 ============ -->
+  <h2 id="glossary">7. 用語ミニ辞典（比喩つき）</h2>
+  <p class="small">🍽️ レストラン早見表：客席・メニュー＝フロントエンド／ウェイター＝API／厨房＝バックエンド／食材庫＝データベース／店舗＝サーバー／店を借りる＝クラウド</p>
+  <table>
+    <tr><th>用語</th><th>ひとことで／たとえ</th></tr>
+    <tr><td><strong>LLM</strong></td><td>ネットの文章を大量に読んだ“物知りな助手”。聞けば答えてくれる相談相手。</td></tr>
+    <tr><td><strong>コンピュータ</strong></td><td>計算と記憶がものすごく速い機械。スマホもサーバーも仲間。</td></tr>
+    <tr><td><strong>インターネット</strong></td><td>世界中のコンピュータをつなぐ“道”。お店に世界から来られる道路網。</td></tr>
+    <tr><td><strong>API</strong></td><td>プログラム同士の“窓口”。レストランのウェイター。</td></tr>
+    <tr><td><strong>データベース</strong></td><td>データを整理してしまう場所。食材庫。</td></tr>
+    <tr><td><strong>バックエンド</strong></td><td>画面の裏で処理する部分。厨房。</td></tr>
+    <tr><td><strong>フロントエンド</strong></td><td>人が見て触る表側の画面。客席とメニュー。</td></tr>
+    <tr><td><strong>サーバー</strong></td><td>アプリを動かす“お店”そのもの。今日はPCの中で一時的に動くだけ。</td></tr>
+    <tr><td><strong>クラウドサーバー</strong></td><td>機械を買わずに“借りる”サーバー。今日は使わない。</td></tr>
+    <tr><td><strong>Claude</strong></td><td>Anthropic社のAI助手（LLMのひとり）。“手”を付けたものがClaude Code。</td></tr>
+    <tr><td><strong>Git</strong></td><td>変更履歴を記録する“タイムマシン”。WindowsではClaude Codeを動かす土台としても必要。</td></tr>
+    <tr><td><strong>GitHub</strong></td><td>Gitの記録をネットに置いて共有する場所。今日は使わない。</td></tr>
+    <tr><td><strong>CLI</strong></td><td>文字（コマンド）で命令する操作。黒い画面。今日は使わない。</td></tr>
+    <tr><td><strong>GPU</strong></td><td>同じ計算を一気に大量にこなす部品。AIの裏で活躍。</td></tr>
+    <tr><td><strong>コマンド</strong></td><td>コンピュータへの“ひとつの命令”。今日はClaudeが代わりに実行。</td></tr>
+    <tr><td><strong>MCP</strong></td><td>AIを外部サービスにつなぐ“USB端子（コネクタ）”。</td></tr>
+    <tr><td><strong>Skills</strong></td><td>よく使う作業手順書のパック。<code>/</code>で呼び出す。レシピ集。</td></tr>
+    <tr><td><strong>Agentic loop</strong></td><td>考える→やる→確認→直すを自分で繰り返すこと。自走する職人。</td></tr>
+    <tr><td><strong>ユニットテスト</strong></td><td>部品ひとつの自動チェック。ソースの味見。</td></tr>
+    <tr><td><strong>E2Eテスト</strong></td><td>お客さんの流れを丸ごと確認。開店前の通しリハーサル。</td></tr>
+    <tr><td><strong>Playwright</strong></td><td>ブラウザを自動操作するロボット。お客さん役の代行さん。</td></tr>
+    <tr><td><strong>Playwright MCP</strong></td><td>Playwright（ブラウザ操作）をMCP経由でClaudeにつないだもの。</td></tr>
+    <tr><td><strong>Claude Codeのセッション</strong></td><td>ひとつの作業のまとまり（会話のひとかたまり）。その間は文脈を覚えている。</td></tr>
+    <tr><td><strong>Docker</strong></td><td>アプリを“箱（コンテナ）”ごと動かす仕組み。今日はDB(PostgreSQL)やGoを動かすのに使う。</td></tr>
+    <tr><td><strong>ngrok</strong></td><td>自分のPCに“公開の住所(URL)”を一本だけ通す道具。臨時の入口。</td></tr>
+  </table>
+  <p class="small">→ もっと詳しい解説は <a href="./用語集.md">用語集.md</a> にもあります。</p>
+
+  <hr>
+
+  <!-- ============ 次の一歩 ============ -->
+  <h2 id="next">8. 次の一歩：自分のアイデアを試す</h2>
+  <div class="do">スキル <code>/idea-to-mockup</code> を呼び出して、質問に答えるだけで<strong>あなたのアイデアの試作</strong>を作ってみましょう。「○○できるやつが欲しい」と言うだけでOK。</div>
+  <p>今日の予約サイトと同じ流れで、自分専用に。全部わからなくてOK、動けば勝ちです。</p>
+
+</div>
+
+<footer>
+  Claude Code 勉強会 ワークブック ／ この記事だけでも進められます。困ったら、その画面のまま聞いてください。
+</footer>
+
+</body>
+</html>

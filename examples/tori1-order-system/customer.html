@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>串焼 とりいち — ご注文</title>
+<style>
+  :root{
+    --ink:#2A2521; --paper:#FAF8F4; --card:#FFFFFF;
+    --accent:#C8453B; --accent2:#3E7C6A; --gold:#C9A24B;
+    --muted:#8A817A; --line:#E9E3DA; --soft:#F3EEE6;
+    --kitchen:#C97A2B; --yakitori:#C8453B; --drink:#3E7C6A;
+    --shadow:0 6px 22px rgba(40,30,20,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    background:var(--paper); color:var(--ink); line-height:1.55;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  button{font-family:inherit;cursor:pointer;border:none}
+
+  /* ===== ヘッダー（暖簾風） ===== */
+  .head{
+    position:sticky;top:0;z-index:30;background:var(--ink);color:#fff;
+    padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .head .brand{font-weight:800;letter-spacing:.04em;font-size:17px}
+  .head .brand .jp{color:var(--gold)}
+  .head .table{
+    margin-left:auto;background:var(--gold);color:#3a2f17;font-weight:800;
+    font-size:14px;padding:6px 13px;border-radius:999px;white-space:nowrap;
+  }
+
+  /* ===== テーブル選択（QRに番号が無いとき） ===== */
+  .picktable{padding:40px 22px;text-align:center}
+  .picktable h2{font-size:20px;margin:0 0 6px}
+  .picktable p{color:var(--muted);font-size:14px;margin:0 0 22px}
+  .table-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:360px;margin:0 auto}
+  .table-grid button{
+    background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 0;
+    font-size:18px;font-weight:800;box-shadow:var(--shadow);color:var(--ink)
+  }
+  .table-grid button:active{transform:scale(.96);background:var(--soft)}
+
+  /* ===== カテゴリタブ（横スクロール） ===== */
+  .cat-tabs{
+    position:sticky;top:calc(45px + env(safe-area-inset-top));z-index:20;
+    display:flex;gap:8px;padding:12px 16px;background:var(--paper);
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .cat-tabs::-webkit-scrollbar{display:none}
+  .cat-tabs button{
+    flex:0 0 auto;font-size:15px;padding:9px 18px;border-radius:999px;
+    background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:600;
+  }
+  .cat-tabs button.on{color:#fff;font-weight:800;border-color:transparent}
+
+  /* ===== メニュー一覧 ===== */
+  .menu{padding:4px 16px 0}
+  .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .mitem{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;
+    display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow);position:relative
+  }
+  .mitem .emoji{font-size:30px}
+  .mitem .nm{font-weight:700;font-size:15px;line-height:1.3}
+  .mitem .pr{color:var(--accent);font-weight:800;font-size:15px}
+  .mitem .add{
+    margin-top:8px;background:var(--ink);color:#fff;border-radius:12px;
+    padding:11px;font-weight:800;font-size:14px
+  }
+  .mitem .add:active{transform:scale(.96)}
+  .mitem .badge{
+    position:absolute;top:-8px;right:-8px;min-width:26px;height:26px;border-radius:999px;
+    background:var(--accent);color:#fff;font-weight:800;font-size:13px;display:grid;
+    place-items:center;padding:0 7px;box-shadow:var(--shadow)
+  }
+
+  /* ===== カート（下に固定・シート） ===== */
+  .cartbar{
+    position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:#fff;border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.12);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  .cart-summary{display:flex;align-items:center;gap:12px}
+  .cart-summary .cnt{
+    background:var(--soft);border-radius:999px;font-weight:800;font-size:14px;padding:6px 13px;white-space:nowrap
+  }
+  .cart-summary .ttl{font-weight:800;font-size:18px;margin-left:auto}
+  .open-cart{font-size:13px;color:var(--muted);text-decoration:underline;background:none}
+  .send{
+    width:100%;margin-top:10px;background:var(--accent);color:#fff;font-size:17px;
+    font-weight:800;padding:15px;border-radius:14px
+  }
+  .send:disabled{background:#d8d2c9;color:#fff}
+  .send:active:not(:disabled){transform:scale(.99)}
+
+  /* ===== カート詳細シート ===== */
+  .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none}
+  .sheet-bg.show{display:block}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:51;background:#fff;
+    border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));
+    transform:translateY(100%);transition:.25s;max-height:75vh;overflow:auto
+  }
+  .sheet.show{transform:translateY(0)}
+  .sheet h3{margin:2px 0 12px;font-size:17px;display:flex;justify-content:space-between}
+  .sheet h3 .x{background:var(--soft);border-radius:999px;width:30px;height:30px;font-size:16px}
+  .cline{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .cline .nm{flex:1;font-size:15px}
+  .cline .qb{width:32px;height:32px;border-radius:10px;background:var(--soft);font-weight:800;font-size:18px;line-height:1}
+  .cline b{min-width:18px;text-align:center}
+  .cline .lp{width:70px;text-align:right;font-weight:700}
+  .sheet-total{display:flex;justify-content:space-between;font-weight:800;font-size:17px;padding:14px 2px 4px}
+
+  /* ===== 注文完了 ===== */
+  .done-screen{padding:70px 26px;text-align:center}
+  .done-screen .big{font-size:64px}
+  .done-screen h2{font-size:22px;margin:14px 0 6px}
+  .done-screen p{color:var(--muted);font-size:15px;margin:0 0 26px}
+  .done-screen button{
+    background:var(--accent);color:#fff;font-weight:800;font-size:16px;
+    padding:14px 30px;border-radius:14px
+  }
+
+  .toast{
+    position:fixed;left:50%;bottom:120px;transform:translateX(-50%) translateY(16px);
+    background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-weight:700;
+    font-size:14px;opacity:0;transition:.25s;z-index:60;box-shadow:var(--shadow);pointer-events:none
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   串焼とりいち — お客さん専用 注文ページ（スマホ向け）
+   - 管理・厨房の画面には行けません（注文だけ）
+   - テーブル番号は URL の ?table=3 で指定できます（QRコード用）
+   ============================================================ */
+const STATIONS={
+  kitchen:{name:'料理',emoji:'🍳',color:'var(--kitchen)'},
+  yakitori:{name:'焼き鳥',emoji:'🔥',color:'var(--yakitori)'},
+  drink:{name:'ドリンク',emoji:'🥤',color:'var(--drink)'},
+};
+const TABLES=Array.from({length:12},(_,i)=>i+1);
+const SEED_MENU=[
+  {id:'y1',name:'正肉',price:180,station:'yakitori',emoji:'🍢'},
+  {id:'y2',name:'ねぎま',price:200,station:'yakitori',emoji:'🍢'},
+  {id:'y3',name:'つくね',price:220,station:'yakitori',emoji:'🍡'},
+  {id:'y4',name:'砂肝',price:180,station:'yakitori',emoji:'🍢'},
+  {id:'y5',name:'皮',price:160,station:'yakitori',emoji:'🍢'},
+  {id:'y6',name:'ハツ',price:180,station:'yakitori',emoji:'🍢'},
+  {id:'y7',name:'レバー',price:180,station:'yakitori',emoji:'🍢'},
+  {id:'y8',name:'手羽先',price:240,station:'yakitori',emoji:'🍗'},
+  {id:'k1',name:'鶏もも唐揚げ',price:580,station:'kitchen',emoji:'🍗'},
+  {id:'k2',name:'鳥もつ煮込み',price:480,station:'kitchen',emoji:'🍲'},
+  {id:'k3',name:'鶏ラーメン',price:780,station:'kitchen',emoji:'🍜'},
+  {id:'k4',name:'親子丼',price:680,station:'kitchen',emoji:'🍚'},
+  {id:'k5',name:'だし巻き卵',price:480,station:'kitchen',emoji:'🍳'},
+  {id:'k6',name:'枝豆',price:380,station:'kitchen',emoji:'🫛'},
+  {id:'k7',name:'ポテトフライ',price:420,station:'kitchen',emoji:'🍟'},
+  {id:'k8',name:'パフェ',price:580,station:'kitchen',emoji:'🍨'},
+  {id:'d1',name:'生ビール',price:550,station:'drink',emoji:'🍺'},
+  {id:'d2',name:'レモンサワー',price:480,station:'drink',emoji:'🍋'},
+  {id:'d3',name:'ハイボール',price:480,station:'drink',emoji:'🥃'},
+  {id:'d4',name:'日本酒(冷)',price:600,station:'drink',emoji:'🍶'},
+  {id:'d5',name:'赤ワイン',price:500,station:'drink',emoji:'🍷'},
+  {id:'d6',name:'緑茶ハイ',price:480,station:'drink',emoji:'🍵'},
+  {id:'d7',name:'ウーロン茶',price:350,station:'drink',emoji:'🥤'},
+  {id:'d8',name:'ミネラルウォーター',price:300,station:'drink',emoji:'💧'},
+];
+const K_MENU='tori1_menu',K_ORDERS='tori1_orders',K_SALES='tori1_sales';
+function getMenu(){try{const m=JSON.parse(localStorage.getItem(K_MENU));if(m)return m}catch(e){} localStorage.setItem(K_MENU,JSON.stringify(SEED_MENU));return SEED_MENU.slice();}
+function getOrders(){try{return JSON.parse(localStorage.getItem(K_ORDERS))||[]}catch(e){return[]}}
+function getSales(){try{return JSON.parse(localStorage.getItem(K_SALES))||[]}catch(e){return[]}}
+function uid(){return Math.random().toString(36).slice(2,9)}
+function nowHM(){const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
+function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+
+/* ---- 状態 ---- */
+let table=null, cart={}, curCat='yakitori', screen='order';
+(function initTable(){
+  const p=new URLSearchParams(location.search).get('table');
+  const n=parseInt(p,10);
+  if(n>=1&&n<=99) table=n;          // QRに番号があれば固定
+})();
+
+let toastT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1600);}
+
+function render(){
+  if(table===null) return renderPickTable();
+  if(screen==='done') return renderDone();
+  return renderOrder();
+}
+
+/* ---- テーブル選択 ---- */
+function renderPickTable(){
+  document.getElementById('app').innerHTML=`
+    <div class="head"><div class="brand">串焼 <span class="jp">とりいち</span></div></div>
+    <div class="picktable">
+      <h2>テーブル番号を選んでください</h2>
+      <p>本来は各テーブルのQRコードから開くと、自動で番号が入ります</p>
+      <div class="table-grid">
+        ${TABLES.map(t=>`<button onclick="table=${t};render()">${t}番</button>`).join('')}
+      </div>
+    </div>`;
+}
+
+/* ---- 注文画面 ---- */
+function renderOrder(){
+  const menu=getMenu();
+  const items=menu.filter(m=>m.station===curCat);
+  const cnt=Object.values(cart).reduce((a,b)=>a+b,0);
+  const total=Object.entries(cart).reduce((s,[id,q])=>{const m=menu.find(x=>x.id===id);return s+(m?m.price*q:0)},0);
+  document.getElementById('app').innerHTML=`
+    <div class="head">
+      <div class="brand">串焼 <span class="jp">とりいち</span></div>
+      <div class="table">🪧 ${table}番テーブル</div>
+    </div>
+    <div class="cat-tabs">
+      ${Object.keys(STATIONS).map(c=>`<button class="${c===curCat?'on':''}" style="${c===curCat?`background:${STATIONS[c].color}`:''}" onclick="curCat='${c}';render()">${STATIONS[c].emoji} ${STATIONS[c].name}</button>`).join('')}
+    </div>
+    <div class="menu"><div class="menu-grid">
+      ${items.map(m=>`
+        <div class="mitem">
+          ${cart[m.id]?`<span class="badge">${cart[m.id]}</span>`:''}
+          <div class="emoji">${m.emoji||'🍽️'}</div>
+          <div class="nm">${m.name}</div>
+          <div class="pr">¥${m.price.toLocaleString()}</div>
+          <button class="add" onclick="add('${m.id}')">＋ 追加</button>
+        </div>`).join('')}
+    </div></div>
+    <div style="height:150px"></div>
+
+    <div class="cartbar">
+      <div class="cart-summary">
+        <span class="cnt">🛒 ${cnt}点</span>
+        ${cnt?`<button class="open-cart" onclick="openSheet()">内容を見る・へらす</button>`:''}
+        <span class="ttl">¥${total.toLocaleString()}</span>
+      </div>
+      <button class="send" ${cnt?'':'disabled'} onclick="placeOrder()">この内容で注文する</button>
+    </div>
+
+    <div class="sheet-bg" id="sheetbg" onclick="closeSheet()"></div>
+    <div class="sheet" id="sheet">
+      <h3><span>🛒 ご注文内容</span><button class="x" onclick="closeSheet()">✕</button></h3>
+      <div id="sheetlines"></div>
+      <div class="sheet-total"><span>合計</span><span>¥${total.toLocaleString()}</span></div>
+    </div>`;
+  drawSheet();
+}
+function drawSheet(){
+  const box=document.getElementById('sheetlines'); if(!box) return;
+  const menu=getMenu(); const ids=Object.keys(cart);
+  box.innerHTML = ids.length? ids.map(id=>{
+    const m=menu.find(x=>x.id===id); const q=cart[id];
+    return `<div class="cline">
+      <span class="nm">${m.emoji} ${m.name}</span>
+      <button class="qb" onclick="chg('${id}',-1)">−</button><b>${q}</b>
+      <button class="qb" onclick="chg('${id}',1)">＋</button>
+      <span class="lp">¥${(m.price*q).toLocaleString()}</span>
+    </div>`;
+  }).join('') : '<p style="color:var(--muted);text-align:center;padding:14px">空っぽです</p>';
+}
+function add(id){cart[id]=(cart[id]||0)+1;toast('追加しました');render();}
+function chg(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];render();openSheetSilent();}
+function openSheet(){document.getElementById('sheetbg').classList.add('show');document.getElementById('sheet').classList.add('show');}
+function openSheetSilent(){const s=document.getElementById('sheet');if(s&&Object.keys(cart).length){document.getElementById('sheetbg').classList.add('show');s.classList.add('show');}}
+function closeSheet(){const bg=document.getElementById('sheetbg'),s=document.getElementById('sheet');if(bg)bg.classList.remove('show');if(s)s.classList.remove('show');}
+
+function placeOrder(){
+  const menu=getMenu();
+  const lines=Object.keys(cart).map(id=>{const m=menu.find(x=>x.id===id);
+    return {id:uid(),menuId:id,name:m.name,emoji:m.emoji,price:m.price,station:m.station,qty:cart[id],done:false};});
+  if(!lines.length) return;
+  const total=lines.reduce((s,l)=>s+l.price*l.qty,0);
+  // 厨房タブレット用
+  const orders=getOrders();
+  orders.push({id:uid(),table,time:nowHM(),createdAt:Date.now(),lines});
+  localStorage.setItem(K_ORDERS,JSON.stringify(orders));
+  // 売上記録用（提供後も残る）
+  const sales=getSales();
+  sales.push({id:uid(),table,date:today(),time:nowHM(),ts:Date.now(),
+    items:lines.map(l=>({name:l.name,price:l.price,qty:l.qty,station:l.station})),total});
+  localStorage.setItem(K_SALES,JSON.stringify(sales));
+  cart={};screen='done';render();
+}
+function renderDone(){
+  document.getElementById('app').innerHTML=`
+    <div class="head"><div class="brand">串焼 <span class="jp">とりいち</span></div><div class="table">🪧 ${table}番テーブル</div></div>
+    <div class="done-screen">
+      <div class="big">✅</div>
+      <h2>ご注文ありがとうございます！</h2>
+      <p>厨房に注文が届きました。<br>できあがりまで少々お待ちください 🍶</p>
+      <button onclick="screen='order';render()">続けて注文する</button>
+    </div>`;
+}
+render();
+</script>
+</body>
+</html>
