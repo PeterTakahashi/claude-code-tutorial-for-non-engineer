@@ -82,6 +82,14 @@ by Seiya
 
 </div>
 
+<div class="small">
+
+▶ 自己紹介・他己紹介の詳細は別ファイル <code>slide/intro.local.html</code> をブラウザで開いて使う（手元用・gitには上げない）。
+
+</div>
+
+<!-- 自己紹介・他己紹介の本番表示は intro.local.html を別タブで開く。実名を含むため git 管理外。 -->
+
 ---
 
 ## 今日のゴール
