@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>串焼 とりいち — オーダーシステム（モック）</title>
+<style>
+  :root{
+    --ink:#2A2521; --paper:#FAF8F4; --card:#FFFFFF;
+    --accent:#C8453B;      /* 朱（暖簾の赤） */
+    --accent2:#3E7C6A;     /* 緑（提供済み） */
+    --gold:#C9A24B;
+    --muted:#8A817A; --line:#E9E3DA; --soft:#F3EEE6;
+    --kitchen:#C97A2B; --yakitori:#C8453B; --drink:#3E7C6A;
+    --shadow:0 6px 22px rgba(40,30,20,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    background:var(--paper); color:var(--ink); line-height:1.6;
+  }
+  button{font-family:inherit;cursor:pointer;border:none}
+  /* ===== トップバー ===== */
+  .topbar{
+    position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;
+    display:flex;align-items:center;gap:14px;padding:10px 16px;
+  }
+  .brand{font-weight:800;letter-spacing:.04em;font-size:16px;white-space:nowrap}
+  .brand .jp{color:var(--gold)}
+  .roles{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .roles a{
+    color:#ddd;text-decoration:none;font-size:13px;padding:6px 11px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.18);transition:.15s;white-space:nowrap;
+  }
+  .roles a:hover{background:rgba(255,255,255,.1)}
+  .roles a.on{background:var(--gold);color:#3a2f17;border-color:var(--gold);font-weight:700}
+  /* ===== レイアウト ===== */
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 80px}
+  .narrow{max-width:560px}
+  h1{font-size:22px;margin:6px 0 2px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+  /* ===== ホーム ===== */
+  .hero{
+    background:linear-gradient(135deg,#2A2521,#3a322b);color:#fff;border-radius:20px;
+    padding:30px 26px;margin-bottom:22px;box-shadow:var(--shadow)
+  }
+  .hero .noren{font-size:13px;color:var(--gold);letter-spacing:.3em}
+  .hero h2{font-size:28px;margin:6px 0 4px}
+  .hero p{color:#cfc7bd;margin:0;font-size:14px}
+  .grid-home{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .home-card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;
+    text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:.15s;display:block
+  }
+  .home-card:hover{transform:translateY(-2px)}
+  .home-card .ic{font-size:30px}
+  .home-card h3{margin:10px 0 4px;font-size:17px}
+  .home-card p{margin:0;color:var(--muted);font-size:13px}
+  .home-card .pill{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
+  .tip{background:var(--soft);border:1px dashed var(--line);border-radius:14px;padding:14px 16px;font-size:13px;color:#6b6259;margin-top:20px}
+  /* ===== お客さん：メニュー ===== */
+  .tablebar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:16px;box-shadow:var(--shadow)}
+  .tablebar label{font-size:13px;color:var(--muted)}
+  select{font-family:inherit;font-size:15px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  .cat-tabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+  .cat-tabs button{font-size:14px;padding:8px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .cat-tabs button.on{color:#fff;font-weight:700;border-color:transparent}
+  .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .mitem{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:6px;transition:.12s;box-shadow:var(--shadow)}
+  .mitem:hover{transform:translateY(-2px)}
+  .mitem .emoji{font-size:26px}
+  .mitem .nm{font-weight:700;font-size:15px}
+  .mitem .pr{color:var(--accent);font-weight:800}
+  .mitem .stg{font-size:11px;color:var(--muted)}
+  .mitem .add{margin-top:6px;background:var(--ink);color:#fff;border-radius:10px;padding:8px;font-weight:700;font-size:13px}
+  .mitem .add:active{transform:scale(.97)}
+  /* ===== カート ===== */
+  .cart{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 22px rgba(0,0,0,.08);padding:12px 16px}
+  .cart-inner{max-width:560px;margin:0 auto}
+  .cart h4{margin:0 0 8px;font-size:14px;display:flex;justify-content:space-between}
+  .cart-line{display:flex;align-items:center;gap:8px;font-size:14px;padding:4px 0}
+  .cart-line .grow{flex:1}
+  .qtybtn{width:26px;height:26px;border-radius:8px;background:var(--soft);font-weight:800;font-size:16px;line-height:1}
+  .cart-total{font-weight:800}
+  .send{width:100%;margin-top:10px;background:var(--accent);color:#fff;font-size:16px;font-weight:800;padding:14px;border-radius:12px}
+  .send:disabled{background:#ccc}
+  .cart-empty{color:var(--muted);font-size:13px;text-align:center;padding:6px 0}
+  /* ===== 厨房（KDS） ===== */
+  .kds-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .kds-badge{font-size:26px;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;color:#fff}
+  .kds-count{margin-left:auto;font-size:14px;color:var(--muted)}
+  .ticket-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .ticket{background:var(--card);border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+  .ticket .th{padding:10px 14px;color:#fff;display:flex;justify-content:space-between;align-items:center;font-weight:800}
+  .ticket .th .tbl{font-size:18px}
+  .ticket .th .tm{font-size:12px;font-weight:600;opacity:.85}
+  .ticket ul{list-style:none;margin:0;padding:8px 14px;flex:1}
+  .ticket li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:15px}
+  .ticket li:last-child{border-bottom:none}
+  .ticket li .q{font-weight:800;color:var(--ink)}
+  .done-btn{margin:10px 14px 14px;background:var(--accent2);color:#fff;font-weight:800;padding:11px;border-radius:10px;font-size:14px}
+  .done-btn:active{transform:scale(.98)}
+  .empty-kds{text-align:center;color:var(--muted);padding:60px 0;font-size:15px}
+  .empty-kds .big{font-size:46px;opacity:.5}
+  /* ===== メニュー管理 ===== */
+  table.adm{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  table.adm th,table.adm td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+  table.adm th{background:var(--soft);font-size:12px;color:var(--muted);font-weight:700}
+  .stag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;color:#fff}
+  .iconbtn{background:var(--soft);border-radius:8px;padding:5px 9px;font-size:12px;margin-left:4px}
+  .iconbtn.del{color:var(--accent)}
+  .adm-form{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:18px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 110px 130px auto;gap:10px;align-items:end}
+  .adm-form label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  .adm-form input,.adm-form select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit}
+  .adm-form .save{background:var(--accent);color:#fff;font-weight:800;padding:10px 16px;border-radius:10px;font-size:14px;white-space:nowrap}
+  @media(max-width:640px){.adm-form{grid-template-columns:1fr 1fr}}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;transition:.25s;z-index:100;box-shadow:var(--shadow)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .reset{position:fixed;right:14px;bottom:14px;z-index:30;background:#fff;border:1px solid var(--line);color:var(--muted);font-size:11px;padding:6px 10px;border-radius:999px;box-shadow:var(--shadow)}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">串焼 <span class="jp">とりいち</span></div>
+    <nav class="roles" id="roles"></nav>
+  </div>
+  <div id="app"></div>
+  <div class="toast" id="toast"></div>
+  <button class="reset" onclick="hardReset()">データを初期化</button>
+
+<script>
+/* ============================================================
+   串焼とりいち オーダーシステム（モック）
+   - データはブラウザ内(localStorage)に保存
+   - 同じPCの複数タブを開くと、注文がリアルタイムで届きます
+   ============================================================ */
+
+const STATIONS = {
+  kitchen:  { name:'料理',     emoji:'🍳', color:'var(--kitchen)' },
+  yakitori: { name:'焼き鳥',   emoji:'🔥', color:'var(--yakitori)' },
+  drink:    { name:'ドリンク', emoji:'🥤', color:'var(--drink)' },
+};
+const TABLES = Array.from({length:12}, (_,i)=> i+1);
+
+/* ---- 初期ダミーメニュー（とりいち風） ---- */
+const SEED_MENU = [
+  // 焼き鳥
+  {id:'y1', name:'正肉',       price:180, station:'yakitori', emoji:'🍢'},
+  {id:'y2', name:'ねぎま',     price:200, station:'yakitori', emoji:'🍢'},
+  {id:'y3', name:'つくね',     price:220, station:'yakitori', emoji:'🍡'},
+  {id:'y4', name:'砂肝',       price:180, station:'yakitori', emoji:'🍢'},
+  {id:'y5', name:'皮',         price:160, station:'yakitori', emoji:'🍢'},
+  {id:'y6', name:'ハツ',       price:180, station:'yakitori', emoji:'🍢'},
+  {id:'y7', name:'レバー',     price:180, station:'yakitori', emoji:'🍢'},
+  {id:'y8', name:'手羽先',     price:240, station:'yakitori', emoji:'🍗'},
+  // 料理
+  {id:'k1', name:'鶏もも唐揚げ', price:580, station:'kitchen', emoji:'🍗'},
+  {id:'k2', name:'鳥もつ煮込み', price:480, station:'kitchen', emoji:'🍲'},
+  {id:'k3', name:'鶏ラーメン',   price:780, station:'kitchen', emoji:'🍜'},
+  {id:'k4', name:'親子丼',       price:680, station:'kitchen', emoji:'🍚'},
+  {id:'k5', name:'だし巻き卵',   price:480, station:'kitchen', emoji:'🍳'},
+  {id:'k6', name:'枝豆',         price:380, station:'kitchen', emoji:'🫛'},
+  {id:'k7', name:'ポテトフライ', price:420, station:'kitchen', emoji:'🍟'},
+  {id:'k8', name:'パフェ',       price:580, station:'kitchen', emoji:'🍨'},
+  // ドリンク
+  {id:'d1', name:'生ビール',       price:550, station:'drink', emoji:'🍺'},
+  {id:'d2', name:'レモンサワー',   price:480, station:'drink', emoji:'🍋'},
+  {id:'d3', name:'ハイボール',     price:480, station:'drink', emoji:'🥃'},
+  {id:'d4', name:'日本酒(冷)',     price:600, station:'drink', emoji:'🍶'},
+  {id:'d5', name:'赤ワイン',       price:500, station:'drink', emoji:'🍷'},
+  {id:'d6', name:'緑茶ハイ',       price:480, station:'drink', emoji:'🍵'},
+  {id:'d7', name:'ウーロン茶',     price:350, station:'drink', emoji:'🥤'},
+  {id:'d8', name:'ミネラルウォーター', price:300, station:'drink', emoji:'💧'},
+];
+
+/* ---- 保存まわり ---- */
+const K_MENU='tori1_menu', K_ORDERS='tori1_orders';
+function loadMenu(){ try{return JSON.parse(localStorage.getItem(K_MENU))||null}catch(e){return null} }
+function getMenu(){ let m=loadMenu(); if(!m){ m=SEED_MENU.slice(); saveMenu(m);} return m; }
+function saveMenu(m){ localStorage.setItem(K_MENU, JSON.stringify(m)); }
+function getOrders(){ try{return JSON.parse(localStorage.getItem(K_ORDERS))||[]}catch(e){return []} }
+function saveOrders(o){ localStorage.setItem(K_ORDERS, JSON.stringify(o)); }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+/* ---- ルーティング ---- */
+const ROUTES=[
+  {h:'#home',  label:'🏠 ホーム'},
+  {h:'#order', label:'📱 お客さん'},
+  {h:'#kds-kitchen',  label:'🍳 料理'},
+  {h:'#kds-yakitori', label:'🔥 焼き鳥'},
+  {h:'#kds-drink',    label:'🥤 ドリンク'},
+  {h:'#admin', label:'⚙️ メニュー管理'},
+];
+function renderRoles(){
+  const cur=location.hash||'#home';
+  document.getElementById('roles').innerHTML = ROUTES.map(r=>
+    `<a href="${r.h}" class="${cur===r.h?'on':''}">${r.label}</a>`).join('');
+}
+function route(){
+  renderRoles();
+  const h=location.hash||'#home';
+  if(h==='#order') return renderOrder();
+  if(h==='#admin') return renderAdmin();
+  if(h.startsWith('#kds-')) return renderKDS(h.replace('#kds-',''));
+  return renderHome();
+}
+window.addEventListener('hashchange', route);
+window.addEventListener('storage', e=>{ if(e.key===K_ORDERS||e.key===K_MENU) route(); });
+
+/* ---- トースト ---- */
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+/* ============================================================
+   画面：ホーム
+   ============================================================ */
+function renderHome(){
+  document.getElementById('app').innerHTML = `
+  <div class="wrap">
+    <div class="hero">
+      <div class="noren">毎度ありがとうございます</div>
+      <h2>串焼 とりいち オーダーシステム</h2>
+      <p>お客さまのスマホ注文を、料理・焼き鳥・ドリンクの3台に自動でお届けします。</p>
+    </div>
+    <div class="grid-home">
+      <a class="home-card" href="#order">
+        <div class="ic">📱</div><h3>お客さん画面</h3>
+        <p>テーブルを選んでメニューを注文</p>
+        <span class="pill" style="background:var(--soft);color:#6b6259">スマホ向け</span>
+      </a>
+      <a class="home-card" href="#kds-kitchen">
+        <div class="ic">🍳</div><h3>厨房① 料理</h3>
+        <p>料理の注文だけが届きます</p>
+        <span class="pill" style="background:var(--kitchen);color:#fff">タブレット①</span>
+      </a>
+      <a class="home-card" href="#kds-yakitori">
+        <div class="ic">🔥</div><h3>厨房② 焼き鳥</h3>
+        <p>焼き鳥の注文だけが届きます</p>
+        <span class="pill" style="background:var(--yakitori);color:#fff">タブレット②</span>
+      </a>
+      <a class="home-card" href="#kds-drink">
+        <div class="ic">🥤</div><h3>ドリンク場</h3>
+        <p>ドリンクの注文だけが届きます</p>
+        <span class="pill" style="background:var(--drink);color:#fff">タブレット③</span>
+      </a>
+      <a class="home-card" href="#admin">
+        <div class="ic">⚙️</div><h3>メニュー管理</h3>
+        <p>メニューの追加・編集・削除</p>
+        <span class="pill" style="background:var(--soft);color:#6b6259">お店の人用</span>
+      </a>
+    </div>
+    <div class="tip">
+      💡 <b>“別の端末ごっこ”の遊び方：</b> このページを別のタブでもう何枚か開いて、それぞれ上のメニューで「お客さん」「料理」「焼き鳥」「ドリンク」を選んでください。
+      お客さん画面で注文すると、担当の厨房タブに<b>その場で</b>届きます。
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   画面：お客さん（注文）
+   ============================================================ */
+let cart={};        // menuId -> qty
+let curTable=1;
+let curCat='yakitori';
+function renderOrder(){
+  const menu=getMenu();
+  const cats=Object.keys(STATIONS);
+  const items=menu.filter(m=>m.station===curCat);
+  document.getElementById('app').innerHTML = `
+  <div class="wrap narrow">
+    <h1>ご注文</h1>
+    <p class="sub">食べたいもの・飲みたいものを選んでください 🍶</p>
+    <div class="tablebar">
+      <label>テーブル番号</label>
+      <select id="tableSel" onchange="curTable=+this.value">
+        ${TABLES.map(t=>`<option value="${t}" ${t===curTable?'selected':''}>${t}番</option>`).join('')}
+      </select>
+    </div>
+    <div class="cat-tabs">
+      ${cats.map(c=>`<button class="${c===curCat?'on':''}" style="${c===curCat?`background:${STATIONS[c].color}`:''}" onclick="curCat='${c}';renderOrder()">${STATIONS[c].emoji} ${STATIONS[c].name}</button>`).join('')}
+    </div>
+    <div class="menu-grid">
+      ${items.map(m=>`
+        <div class="mitem">
+          <div class="emoji">${m.emoji||'🍽️'}</div>
+          <div class="nm">${m.name}</div>
+          <div class="pr">¥${m.price.toLocaleString()}</div>
+          <button class="add" onclick="addToCart('${m.id}')">＋ 注文に追加</button>
+        </div>`).join('')}
+    </div>
+  </div>
+  ${renderCart(menu)}`;
+  const sel=document.getElementById('tableSel'); if(sel) sel.value=curTable;
+}
+function addToCart(id){ cart[id]=(cart[id]||0)+1; toast('追加しました'); renderOrder(); }
+function chgQty(id,d){ cart[id]=(cart[id]||0)+d; if(cart[id]<=0) delete cart[id]; renderOrder(); }
+function renderCart(menu){
+  const ids=Object.keys(cart);
+  let total=0; const lines=ids.map(id=>{
+    const m=menu.find(x=>x.id===id); if(!m) return ''; const q=cart[id]; total+=m.price*q;
+    return `<div class="cart-line">
+      <span class="grow">${m.emoji} ${m.name}</span>
+      <button class="qtybtn" onclick="chgQty('${id}',-1)">−</button>
+      <b>${q}</b>
+      <button class="qtybtn" onclick="chgQty('${id}',1)">＋</button>
+      <span style="width:64px;text-align:right">¥${(m.price*q).toLocaleString()}</span>
+    </div>`;
+  }).join('');
+  return `<div class="cart"><div class="cart-inner">
+    <h4><span>🛒 ご注文内容（${curTable}番テーブル）</span><span class="cart-total">¥${total.toLocaleString()}</span></h4>
+    ${ids.length? lines : '<div class="cart-empty">まだ何も選ばれていません</div>'}
+    <button class="send" ${ids.length?'':'disabled'} onclick="placeOrder()">この内容で注文する</button>
+  </div></div>`;
+}
+function placeOrder(){
+  const menu=getMenu();
+  const lines=Object.keys(cart).map(id=>{
+    const m=menu.find(x=>x.id===id);
+    return {id:uid(), menuId:id, name:m.name, emoji:m.emoji, price:m.price, station:m.station, qty:cart[id], done:false};
+  });
+  if(!lines.length) return;
+  const orders=getOrders();
+  orders.push({id:uid(), table:curTable, time:nowHM(), createdAt:Date.now(), lines});
+  saveOrders(orders);
+  cart={};
+  toast('✅ 注文を送りました！厨房に届いています');
+  renderOrder();
+}
+function nowHM(){ const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+
+/* ============================================================
+   画面：厨房（KDS）
+   ============================================================ */
+function renderKDS(station){
+  const st=STATIONS[station]; if(!st) return renderHome();
+  const orders=getOrders();
+  // この担当の、未提供の品物がある注文だけを表示
+  const tickets=orders.map(o=>{
+    const mine=o.lines.filter(l=>l.station===station && !l.done);
+    return mine.length? {...o, mine} : null;
+  }).filter(Boolean).sort((a,b)=>a.createdAt-b.createdAt);
+  const totalItems=tickets.reduce((s,t)=>s+t.mine.reduce((x,l)=>x+l.qty,0),0);
+  document.getElementById('app').innerHTML = `
+  <div class="wrap">
+    <div class="kds-head">
+      <div class="kds-badge" style="background:${st.color}">${st.emoji}</div>
+      <div><h1 style="margin:0">${st.name}</h1><div class="sub" style="margin:0">担当タブレット</div></div>
+      <div class="kds-count">未提供 <b style="font-size:20px;color:var(--ink)">${totalItems}</b> 品</div>
+    </div>
+    ${tickets.length ? `<div class="ticket-grid">${tickets.map(t=>ticketHTML(t,station,st)).join('')}</div>`
+      : `<div class="empty-kds"><div class="big">${st.emoji}</div><p>今のところ注文はありません</p></div>`}
+  </div>`;
+}
+function ticketHTML(t,station,st){
+  return `<div class="ticket">
+    <div class="th" style="background:${st.color}">
+      <span class="tbl">🪧 ${t.table}番テーブル</span>
+      <span class="tm">${t.time}</span>
+    </div>
+    <ul>${t.mine.map(l=>`<li><span>${l.emoji||''} ${l.name}</span><span class="q">×${l.qty}</span></li>`).join('')}</ul>
+    <button class="done-btn" onclick="markDone('${t.id}','${station}')">✓ 提供済みにする</button>
+  </div>`;
+}
+function markDone(orderId,station){
+  const orders=getOrders();
+  const o=orders.find(x=>x.id===orderId); if(!o) return;
+  o.lines.forEach(l=>{ if(l.station===station) l.done=true; });
+  // 全品提供済みになった注文は削除
+  const left=orders.filter(x=> x.lines.some(l=>!l.done));
+  saveOrders(left);
+  toast('提供済みにしました 🍽️');
+  renderKDS(station);
+}
+
+/* ============================================================
+   画面：メニュー管理
+   ============================================================ */
+let editId=null;
+function renderAdmin(){
+  const menu=getMenu();
+  const editing = editId? menu.find(m=>m.id===editId) : null;
+  document.getElementById('app').innerHTML = `
+  <div class="wrap">
+    <h1>メニュー管理</h1>
+    <p class="sub">メニューの追加・編集・削除ができます。担当を変えると、注文の振り分け先も変わります。</p>
+    <div class="adm-form">
+      <div style="grid-column:1/2"><label>メニュー名</label><input id="f_name" value="${editing?editing.name:''}" placeholder="例：つくね"></div>
+      <div><label>値段（円）</label><input id="f_price" type="number" value="${editing?editing.price:''}" placeholder="220"></div>
+      <div><label>担当</label>
+        <select id="f_station">
+          ${Object.entries(STATIONS).map(([k,v])=>`<option value="${k}" ${editing&&editing.station===k?'selected':''}>${v.emoji} ${v.name}</option>`).join('')}
+        </select>
+      </div>
+      <button class="save" onclick="saveItem()">${editing?'更新する':'＋ 追加する'}</button>
+      ${editing?`<button class="iconbtn" style="grid-column:1/-1;justify-self:start" onclick="editId=null;renderAdmin()">キャンセル</button>`:''}
+    </div>
+    <table class="adm">
+      <thead><tr><th>メニュー</th><th>値段</th><th>担当</th><th style="text-align:right">操作</th></tr></thead>
+      <tbody>
+        ${menu.map(m=>`<tr>
+          <td>${m.emoji||''} ${m.name}</td>
+          <td>¥${m.price.toLocaleString()}</td>
+          <td><span class="stag" style="background:${STATIONS[m.station].color}">${STATIONS[m.station].emoji} ${STATIONS[m.station].name}</span></td>
+          <td style="text-align:right">
+            <button class="iconbtn" onclick="editId='${m.id}';renderAdmin()">編集</button>
+            <button class="iconbtn del" onclick="delItem('${m.id}')">削除</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function saveItem(){
+  const name=document.getElementById('f_name').value.trim();
+  const price=parseInt(document.getElementById('f_price').value,10);
+  const station=document.getElementById('f_station').value;
+  if(!name){ toast('メニュー名を入れてください'); return; }
+  if(!price||price<0){ toast('値段を入れてください'); return; }
+  const menu=getMenu();
+  const emoji = STATIONS[station].emoji;
+  if(editId){
+    const m=menu.find(x=>x.id===editId); m.name=name; m.price=price; m.station=station;
+    toast('更新しました'); editId=null;
+  }else{
+    menu.push({id:uid(), name, price, station, emoji}); toast('追加しました');
+  }
+  saveMenu(menu); renderAdmin();
+}
+function delItem(id){
+  let menu=getMenu(); menu=menu.filter(m=>m.id!==id); saveMenu(menu);
+  if(editId===id) editId=null;
+  toast('削除しました'); renderAdmin();
+}
+
+/* ---- 全データ初期化 ---- */
+function hardReset(){
+  if(!confirm('メニューと注文をすべて初期状態に戻します。よろしいですか？')) return;
+  localStorage.removeItem(K_MENU); localStorage.removeItem(K_ORDERS);
+  cart={}; editId=null; toast('初期化しました'); route();
+}
+
+/* ---- 起動 ---- */
+getMenu();
+route();
+</script>
+</body>
+</html>

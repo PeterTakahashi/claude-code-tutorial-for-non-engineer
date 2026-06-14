@@ -1,0 +1,7 @@
+.env
+.DS_Store
+.playwright-mcp/
+__pycache__/
+*.pyc
+.claude/settings.local.json
+slide/img_gen.log
